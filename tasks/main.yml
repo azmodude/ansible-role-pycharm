@@ -1,0 +1,40 @@
+# tasks file for pycharm
+---
+- name: Check for pycharm existence
+  stat:
+    path: "{{ pycharm_installation_location }}/bin/pycharm.sh"
+  register: pycharm_installed
+- block:
+  - name: Create destination directories
+    file:
+      name: "{{ item }}"
+      state: directory
+    with_items:
+      - "{{ pycharm_desktopicon_location }}"
+
+  - name: Download pycharm tarball
+    unarchive:
+      src: "http://download.jetbrains.com/python/pycharm-{{ pycharm_edition }}-{{ pycharm_version }}.tar.gz"
+      dest: "{{ pycharm_download_location }}"
+      mode: 0644
+      copy: no
+      creates: "{{pycharm_download_location}}/pycharm-{{ pycharm_version }}"
+
+  # why oh why is there still no remote move implemenentation in ansible? :/
+  - name: Move pycharm to installation location
+    command: >
+      mv {{pycharm_download_location}}/pycharm-{{ pycharm_version }} {{ pycharm_installation_location }}
+      removes="{{pycharm_download_location}}/pycharm-{{ pycharm_version }}"
+      creates="{{ pycharm_installation_location }}"
+
+  - name: Make pycharm.sh executable (JetBrains for w/e reason doesn't)
+    file:
+      path: "{{ pycharm_installation_location }}/bin/pycharm.sh"
+      state: file
+      mode: 0755
+
+  - name: generate .desktop file
+    template:
+      src: jetbrains-pycharm.desktop.j2
+      dest: "{{pycharm_desktopicon_location}}/jetbrains-pycharm.desktop"
+  when: not pycharm_installed.stat.exists

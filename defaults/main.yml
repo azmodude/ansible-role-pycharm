@@ -1,0 +1,6 @@
+---
+pycharm_installation_location: "{{ ansible_env.HOME }}/pycharm"
+pycharm_download_location: "{{ ansible_env.TMPDIR }}"
+pycharm_desktopicon_location: "{{ ansible_env.HOME }}/.local/share/applications"
+pycharm_version: 2016.1.4
+pycharm_edition: professional
